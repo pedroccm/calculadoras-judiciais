@@ -1,12 +1,15 @@
 {
   "name": "calculadoras-judiciais",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui"
   },
   "dependencies": {
     "next": "^15.3.0",
@@ -16,6 +19,8 @@
   },
   "devDependencies": {
     "@netlify/plugin-nextjs": "^5.0.0",
+    "vitest": "^3.0.0",
+    "@vitest/ui": "^3.0.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
