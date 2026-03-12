@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import {
-  CalculatorShell, SectionCard, Field, Input, BtnCalc,
+  CalculatorShell, SectionCard, Field, Input, CurrencyInput, BtnCalc,
   ResultBox, AlertError, LoadingIndices,
 } from '@/components/calculator-shell'
 import { calcCumprimentoSimples } from '@/lib/calculations'
@@ -67,13 +67,7 @@ export default function CumprimentoSimplesPage() {
               label="Valor da Condenação (R$)"
               hint="Valor original conforme a sentença"
             >
-              <Input
-                type="text"
-                value={valor}
-                onChange={setValor}
-                placeholder="100.000,00"
-                prefix="R$"
-              />
+              <CurrencyInput value={valor} onChange={setValor} />
             </Field>
 
             <Field label="Data da Condenação (mês/ano)">

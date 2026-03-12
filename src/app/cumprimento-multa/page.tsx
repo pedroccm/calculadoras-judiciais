@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import {
-  CalculatorShell, SectionCard, Field, Input, BtnCalc,
+  CalculatorShell, SectionCard, Field, Input, CurrencyInput, BtnCalc,
   ResultBox, AlertError, LoadingIndices,
 } from '@/components/calculator-shell'
 import { calcCumprimentoMulta } from '@/lib/calculations'
@@ -70,7 +70,7 @@ export default function CumprimentoMultaPage() {
             {error && <AlertError msg={error} />}
 
             <Field label="Valor da Condenação (R$)">
-              <Input type="text" value={valor} onChange={setValor} placeholder="100.000,00" prefix="R$" />
+              <CurrencyInput value={valor} onChange={setValor} />
             </Field>
 
             <Field label="Data da Condenação">

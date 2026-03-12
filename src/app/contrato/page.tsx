@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import {
-  CalculatorShell, SectionCard, Field, Input, Select, BtnCalc,
+  CalculatorShell, SectionCard, Field, Input, CurrencyInput, Select, BtnCalc,
   ResultBox, AlertError,
 } from '@/components/calculator-shell'
 import { calcDividaContrato } from '@/lib/calculations'
@@ -61,7 +61,7 @@ export default function ContratoPage() {
             {error && <AlertError msg={error} />}
 
             <Field label="Valor Principal" hint="Valor original da dívida / prestação em atraso">
-              <Input type="text" value={valorPrincipal} onChange={setValorPrincipal} prefix="R$" placeholder="10.000,00" />
+              <CurrencyInput value={valorPrincipal} onChange={setValorPrincipal} />
             </Field>
 
             <div className="grid grid-cols-2 gap-3">

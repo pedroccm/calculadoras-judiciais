@@ -149,6 +149,45 @@ export function Select({
   )
 }
 
+// ─── Currency Input com máscara automática ────────────────────────────────────
+
+function formatAsCurrency(digits: string): string {
+  const padded = digits.padStart(3, '0')
+  const cents = padded.slice(-2)
+  const intPart = padded.slice(0, -2).replace(/^0+/, '') || '0'
+  const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  return `${intFormatted},${cents}`
+}
+
+export function CurrencyInput({
+  value,
+  onChange,
+  placeholder = '0,00',
+}: {
+  value: string
+  onChange: (formatted: string) => void
+  placeholder?: string
+}) {
+  function handleChange(raw: string) {
+    const digits = raw.replace(/\D/g, '')
+    onChange(digits ? formatAsCurrency(digits) : '')
+  }
+
+  return (
+    <div className="relative flex items-center">
+      <span className="absolute left-3 text-slate-400 text-sm select-none pointer-events-none">R$</span>
+      <input
+        type="text"
+        inputMode="numeric"
+        value={value}
+        onChange={(e) => handleChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full rounded border border-slate-200 bg-white text-slate-900 pl-8 pr-3 py-2 text-sm focus:outline-none focus:border-navy-400 focus:ring-1 focus:ring-navy-100 placeholder:text-slate-300 transition-colors tabular-nums"
+      />
+    </div>
+  )
+}
+
 export function BtnCalc({
   onClick,
   loading = false,

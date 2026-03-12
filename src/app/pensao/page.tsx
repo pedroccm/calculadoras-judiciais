@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import {
-  CalculatorShell, SectionCard, Field, Input, Select, BtnCalc,
+  CalculatorShell, SectionCard, Field, Input, CurrencyInput, Select, BtnCalc,
   ResultBox, AlertError, LoadingIndices,
 } from '@/components/calculator-shell'
 import { calcPensao } from '@/lib/calculations'
@@ -137,13 +137,13 @@ export default function PensaoPage() {
                     <Input type="number" value={valorBase} onChange={setValorBase} suffix="%" placeholder="30" step="0.01" min="0" />
                   </Field>
                   <Field label="Salário do Alimentante (R$)" hint="Valor mensal bruto">
-                    <Input type="text" value={salarioPagador} onChange={setSalarioPagador} prefix="R$" placeholder="5.000,00" />
+                    <CurrencyInput value={salarioPagador} onChange={setSalarioPagador} />
                   </Field>
                 </>
               )}
               {tipoPensao === 'valor_fixo' && (
                 <Field label="Valor Fixo da Pensão" hint="Valor mensal estipulado na sentença">
-                  <Input type="text" value={valorBase} onChange={setValorBase} prefix="R$" placeholder="1.000,00" />
+                  <CurrencyInput value={valorBase} onChange={setValorBase} />
                 </Field>
               )}
             </div>
@@ -157,12 +157,9 @@ export default function PensaoPage() {
                   label="Aplicar mesmo valor a todos os meses"
                   hint="Preencha e clique fora para aplicar a todos"
                 >
-                  <Input
-                    type="text"
+                  <CurrencyInput
                     value={pagamentoUniforme}
                     onChange={(v) => { setPagamentoUniforme(v); setPagamentos(prev => prev.map(p => ({ ...p, valor: v }))) }}
-                    prefix="R$"
-                    placeholder="500,00"
                   />
                 </Field>
 
@@ -175,16 +172,13 @@ export default function PensaoPage() {
                         <div key={p.mes} className="flex items-center gap-2">
                           <span className="text-xs font-mono text-navy-500 w-16 flex-shrink-0">{label}</span>
                           <div className="flex-1">
-                            <Input
-                              type="text"
+                            <CurrencyInput
                               value={p.valor}
                               onChange={(v) => {
                                 const next = [...pagamentos]
                                 next[i] = { ...p, valor: v }
                                 setPagamentos(next)
                               }}
-                              prefix="R$"
-                              placeholder="0,00"
                             />
                           </div>
                         </div>

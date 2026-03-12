@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import {
-  CalculatorShell, SectionCard, Field, Input, BtnCalc,
+  CalculatorShell, SectionCard, Field, Input, CurrencyInput, BtnCalc,
   ResultBox, AlertError,
 } from '@/components/calculator-shell'
 import { calcSuperendividamento } from '@/lib/calculations'
@@ -84,18 +84,18 @@ export default function SuperendividamentoPage() {
               {error && <AlertError msg={error} />}
 
               <Field label="Renda Bruta Mensal" hint="Salário, benefícios, aluguéis, etc.">
-                <Input type="text" value={rendaBruta} onChange={setRendaBruta} prefix="R$" placeholder="4.000,00" />
+                <CurrencyInput value={rendaBruta} onChange={setRendaBruta} />
               </Field>
 
               <Field label="Descontos e Despesas Fixas" hint="INSS, IRRF, plano de saúde, aluguel, alimentação...">
-                <Input type="text" value={descontos} onChange={setDescontos} prefix="R$" placeholder="1.500,00" />
+                <CurrencyInput value={descontos} onChange={setDescontos} />
               </Field>
 
               <Field
                 label="Mínimo Existencial Personalizado"
                 hint="Vazio = Salário Mínimo vigente (R$ 1.518 em 2025). Art. 54-A da Lei 14.181/2021"
               >
-                <Input type="text" value={minimoCustom} onChange={setMinimoCustom} prefix="R$" placeholder="1.518,00 (padrão: SM)" />
+                <CurrencyInput value={minimoCustom} onChange={setMinimoCustom} />
               </Field>
 
               {rendaBruta && (
@@ -155,12 +155,9 @@ export default function SuperendividamentoPage() {
                     placeholder="Nome do credor (banco, empresa...)"
                   />
                   <div className="grid grid-cols-2 gap-2">
-                    <Input
-                      type="text"
+                    <CurrencyInput
                       value={d.saldo}
                       onChange={(v) => updateDivida(d.id, 'saldo', v)}
-                      placeholder="Saldo devedor"
-                      prefix="R$"
                     />
                     <Input
                       type="text"

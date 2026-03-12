@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import {
-  CalculatorShell, SectionCard, Field, Input, BtnCalc,
+  CalculatorShell, SectionCard, Field, Input, CurrencyInput, BtnCalc,
   ResultBox, AlertError, LoadingIndices,
 } from '@/components/calculator-shell'
 import { calcPagamentosParciais } from '@/lib/calculations'
@@ -103,7 +103,7 @@ export default function PagamentosParciaisPage() {
               {error && <AlertError msg={error} />}
 
               <Field label="Valor da Condenação">
-                <Input type="text" value={valorCondenacao} onChange={setValorCondenacao} prefix="R$" placeholder="100.000,00" />
+                <CurrencyInput value={valorCondenacao} onChange={setValorCondenacao} />
               </Field>
 
               <div className="grid grid-cols-2 gap-3">
@@ -143,12 +143,9 @@ export default function PagamentosParciaisPage() {
                     <label className="block text-xs font-semibold text-navy-600 uppercase tracking-wider mb-1.5">
                       Valor
                     </label>
-                    <Input
-                      type="text"
+                    <CurrencyInput
                       value={p.valor}
                       onChange={(v) => updatePagamento(p.id, 'valor', v)}
-                      prefix="R$"
-                      placeholder="0,00"
                     />
                   </div>
                   {pagamentosInput.length > 1 && (
