@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import {
   CalculatorShell, SectionCard, Field, Input, CurrencyInput, Select, BtnCalc,
-  ResultBox, AlertError,
+  ResultBox, AlertError, MonthYearPicker,
 } from '@/components/calculator-shell'
 import { calcDividaContrato } from '@/lib/calculations'
 import { formatCurrency, formatFactor, currentMonthInput, parseBrNumber } from '@/lib/format'
@@ -66,10 +66,10 @@ export default function ContratoPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <Field label="Data de Vencimento" hint="Quando a dívida venceu">
-                <Input type="month" value={dataVencimento} onChange={setDataVencimento} max={currentMonthInput()} />
+                <MonthYearPicker value={dataVencimento} onChange={setDataVencimento} max={currentMonthInput()} />
               </Field>
               <Field label="Data de Referência" hint="Hoje ou data de cálculo">
-                <Input type="month" value={dataReferencia} onChange={setDataReferencia} />
+                <MonthYearPicker value={dataReferencia} onChange={setDataReferencia} />
               </Field>
             </div>
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import {
   CalculatorShell, SectionCard, Field, Input, CurrencyInput, BtnCalc,
-  ResultBox, AlertError, LoadingIndices, TabelaIndices, IndicesCarregados,
+  ResultBox, AlertError, LoadingIndices, TabelaIndices, IndicesCarregados, MonthYearPicker,
 } from '@/components/calculator-shell'
 import { calcCumprimentoMulta } from '@/lib/calculations'
 import { formatCurrency, formatFactor, currentMonthInput, parseBrNumber } from '@/lib/format'
@@ -75,14 +75,14 @@ export default function CumprimentoMultaPage() {
             </Field>
 
             <Field label="Data da Condenação">
-              <Input type="month" value={dataCondena} onChange={setDataCondena} max={currentMonthInput()} />
+              <MonthYearPicker value={dataCondena} onChange={setDataCondena} max={currentMonthInput()} />
             </Field>
 
             <Field
               label="Data de Referência (hoje)"
               hint="Mês em que o cálculo é realizado"
             >
-              <Input type="month" value={dataAtual} onChange={setDataAtual} />
+              <MonthYearPicker value={dataAtual} onChange={setDataAtual} />
             </Field>
 
             <div className="border-t border-navy-100 pt-4">

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import {
   CalculatorShell, SectionCard, Field, Input, CurrencyInput, Select, BtnCalc,
-  ResultBox, AlertError, LoadingIndices, IndicesCarregados,
+  ResultBox, AlertError, LoadingIndices, IndicesCarregados, MonthYearPicker,
 } from '@/components/calculator-shell'
 import { calcPensao } from '@/lib/calculations'
 import { formatCurrency, currentMonthInput, parseBrNumber, addMonths, compareYearMonth } from '@/lib/format'
@@ -112,10 +112,10 @@ export default function PensaoPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Período — Início">
-                  <Input type="month" value={periodoInicio} onChange={setPeriodoInicio} max={currentMonthInput()} />
+                  <MonthYearPicker value={periodoInicio} onChange={setPeriodoInicio} max={currentMonthInput()} />
                 </Field>
                 <Field label="Período — Fim">
-                  <Input type="month" value={periodoFim} onChange={setPeriodoFim} max={currentMonthInput()} />
+                  <MonthYearPicker value={periodoFim} onChange={setPeriodoFim} max={currentMonthInput()} />
                 </Field>
               </div>
 

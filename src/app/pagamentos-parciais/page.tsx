@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import {
   CalculatorShell, SectionCard, Field, Input, CurrencyInput, BtnCalc,
-  ResultBox, AlertError, LoadingIndices, IndicesCarregados,
+  ResultBox, AlertError, LoadingIndices, IndicesCarregados, MonthYearPicker,
 } from '@/components/calculator-shell'
 import { calcPagamentosParciais } from '@/lib/calculations'
 import { formatCurrency, formatFactor, currentMonthInput, parseBrNumber } from '@/lib/format'
@@ -109,10 +109,10 @@ export default function PagamentosParciaisPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Data da Condenação">
-                  <Input type="month" value={dataCondena} onChange={setDataCondena} max={currentMonthInput()} />
+                  <MonthYearPicker value={dataCondena} onChange={setDataCondena} max={currentMonthInput()} />
                 </Field>
                 <Field label="Data Atual">
-                  <Input type="month" value={dataAtual} onChange={setDataAtual} />
+                  <MonthYearPicker value={dataAtual} onChange={setDataAtual} />
                 </Field>
               </div>
 
@@ -134,8 +134,7 @@ export default function PagamentosParciaisPage() {
                     <label className="block text-xs font-semibold text-navy-600 uppercase tracking-wider mb-1.5">
                       #{i + 1} Data
                     </label>
-                    <Input
-                      type="month"
+                    <MonthYearPicker
                       value={p.data}
                       onChange={(v) => updatePagamento(p.id, 'data', v)}
                     />

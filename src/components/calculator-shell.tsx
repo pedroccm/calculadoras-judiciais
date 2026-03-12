@@ -151,6 +151,79 @@ export function Select({
   )
 }
 
+// ─── MonthYearPicker — substitui <input type="month"> nativo ─────────────────
+
+const MESES = [
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+]
+
+const ANO_MIN = 1990
+const ANO_MAX = new Date().getFullYear() + 2
+
+export function MonthYearPicker({
+  value,
+  onChange,
+  max,
+}: {
+  value: string          // "YYYY-MM" ou ""
+  onChange: (v: string) => void
+  max?: string           // "YYYY-MM" opcional
+}) {
+  const [year, month] = value ? value.split('-').map(Number) : ['', '']
+
+  const maxYear  = max ? Number(max.split('-')[0]) : ANO_MAX
+  const maxMonth = max ? Number(max.split('-')[1]) : 12
+
+  const years: number[] = []
+  for (let y = ANO_MAX; y >= ANO_MIN; y--) years.push(y)
+
+  function handleMonth(m: string) {
+    const y = year || new Date().getFullYear()
+    onChange(`${y}-${m.padStart(2, '0')}`)
+  }
+
+  function handleYear(y: string) {
+    const m = month || 1
+    onChange(`${y}-${String(m).padStart(2, '0')}`)
+  }
+
+  const inputCls = "flex-1 rounded border border-slate-200 bg-white text-slate-900 px-3 py-2 text-sm focus:outline-none focus:border-navy-400 focus:ring-1 focus:ring-navy-100 transition-colors cursor-pointer appearance-none"
+
+  return (
+    <div className="flex gap-2">
+      <select
+        value={month || ''}
+        onChange={(e) => handleMonth(e.target.value)}
+        className={inputCls}
+      >
+        <option value="" disabled>Mês</option>
+        {MESES.map((nome, i) => {
+          const m = i + 1
+          const disabled = !!year && year === maxYear && m > maxMonth
+          return (
+            <option key={m} value={m} disabled={disabled}>
+              {nome}
+            </option>
+          )
+        })}
+      </select>
+      <select
+        value={year || ''}
+        onChange={(e) => handleYear(e.target.value)}
+        className={`${inputCls} w-28 flex-none`}
+      >
+        <option value="" disabled>Ano</option>
+        {years.map((y) => (
+          <option key={y} value={y} disabled={y > maxYear}>
+            {y}
+          </option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
 // ─── Currency Input com máscara automática ────────────────────────────────────
 
 function formatAsCurrency(digits: string): string {

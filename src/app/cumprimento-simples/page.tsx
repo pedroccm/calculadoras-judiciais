@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import {
   CalculatorShell, SectionCard, Field, Input, CurrencyInput, BtnCalc,
-  ResultBox, AlertError, LoadingIndices, TabelaIndices, IndicesCarregados,
+  ResultBox, AlertError, LoadingIndices, TabelaIndices, IndicesCarregados, MonthYearPicker,
 } from '@/components/calculator-shell'
 import { calcCumprimentoSimples } from '@/lib/calculations'
 import { formatCurrency, formatPercent, formatFactor, currentMonthInput, parseBrNumber } from '@/lib/format'
@@ -71,20 +71,11 @@ export default function CumprimentoSimplesPage() {
             </Field>
 
             <Field label="Data da Condenação (mês/ano)">
-              <Input
-                type="month"
-                value={dataCondena}
-                onChange={setDataCondena}
-                max={currentMonthInput()}
-              />
+              <MonthYearPicker value={dataCondena} onChange={setDataCondena} max={currentMonthInput()} />
             </Field>
 
             <Field label="Data de Referência (hoje ou outra)">
-              <Input
-                type="month"
-                value={dataAtual}
-                onChange={setDataAtual}
-              />
+              <MonthYearPicker value={dataAtual} onChange={setDataAtual} />
             </Field>
 
             <Field
