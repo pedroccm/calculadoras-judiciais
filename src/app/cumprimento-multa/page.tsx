@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import {
   CalculatorShell, SectionCard, Field, Input, CurrencyInput, BtnCalc,
-  ResultBox, AlertError, LoadingIndices, TabelaIndices,
+  ResultBox, AlertError, LoadingIndices, TabelaIndices, IndicesCarregados,
 } from '@/components/calculator-shell'
 import { calcCumprimentoMulta } from '@/lib/calculations'
 import { formatCurrency, formatFactor, currentMonthInput, parseBrNumber } from '@/lib/format'
@@ -67,6 +67,7 @@ export default function CumprimentoMultaPage() {
         <SectionCard titulo="Dados da Condenação">
           <div className="space-y-4">
             {loadingIdx && <LoadingIndices />}
+            {indices && <IndicesCarregados ipcae={indices.ipcae} />}
             {error && <AlertError msg={error} />}
 
             <Field label="Valor da Condenação (R$)">

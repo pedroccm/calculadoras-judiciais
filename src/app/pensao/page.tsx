@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import {
   CalculatorShell, SectionCard, Field, Input, CurrencyInput, Select, BtnCalc,
-  ResultBox, AlertError, LoadingIndices,
+  ResultBox, AlertError, LoadingIndices, IndicesCarregados,
 } from '@/components/calculator-shell'
 import { calcPensao } from '@/lib/calculations'
 import { formatCurrency, currentMonthInput, parseBrNumber, addMonths, compareYearMonth } from '@/lib/format'
@@ -107,6 +107,7 @@ export default function PensaoPage() {
           <SectionCard titulo="Configuração da Pensão">
             <div className="space-y-4">
               {loadingIdx && <LoadingIndices />}
+              {indices && <IndicesCarregados ipcae={indices.ipcae} inpc={indices.inpc} />}
               {error && <AlertError msg={error} />}
 
               <div className="grid grid-cols-2 gap-3">

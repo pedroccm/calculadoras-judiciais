@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import type { DetalheCorrecao } from '@/lib/types'
+import type { DetalheCorrecao, MonthlyIndex } from '@/lib/types'
 
 interface Props {
   titulo: string
@@ -257,6 +257,83 @@ export function LoadingIndices() {
         <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
       </svg>
       Carregando índices (BCB)...
+    </div>
+  )
+}
+
+export function IndicesCarregados({ ipcae, inpc }: { ipcae?: MonthlyIndex[]; inpc?: MonthlyIndex[] }) {
+  const [aberto, setAberto] = useState(false)
+  const series = [
+    ipcae && ipcae.length > 0 ? { label: 'IPCA-E', cor: 'navy', dados: ipcae } : null,
+    inpc  && inpc.length  > 0 ? { label: 'INPC',   cor: 'slate', dados: inpc  } : null,
+  ].filter(Boolean) as { label: string; cor: string; dados: MonthlyIndex[] }[]
+
+  if (series.length === 0) return null
+
+  // Pega os 3 últimos registros de cada série para exibir no resumo fechado
+  const ultimos = series[0].dados.slice(-3)
+
+  return (
+    <div className="border border-slate-200 rounded-lg overflow-hidden text-xs">
+      <button
+        onClick={() => setAberto(v => !v)}
+        className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 transition-colors"
+      >
+        <span className="flex items-center gap-2 text-slate-600 font-medium">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3.5 h-3.5 text-green-500">
+            <circle cx="8" cy="8" r="6"/>
+            <path d="M5.5 8l2 2 3-3" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Índices carregados (BCB) — {series.map(s => `${s.label}: ${s.dados.length} meses`).join(' · ')}
+        </span>
+        <span className="flex items-center gap-3">
+          <span className="text-slate-400 font-mono">
+            {ultimos.map(u => `${String(u.month).padStart(2,'0')}/${u.year}: ${u.value.toFixed(2).replace('.',',')}%`).join(' · ')}
+          </span>
+          <svg
+            viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"
+            className={`w-3.5 h-3.5 text-slate-400 transition-transform ${aberto ? 'rotate-180' : ''}`}
+          >
+            <path d="M4 6l4 4 4-4" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </span>
+      </button>
+
+      {aberto && (
+        <div className="divide-y divide-slate-100">
+          {series.map(({ label, dados }) => (
+            <div key={label}>
+              <p className="px-3 py-1.5 font-semibold text-slate-500 uppercase tracking-wider bg-slate-50/80">{label}</p>
+              <div className="overflow-x-auto max-h-64 overflow-y-auto">
+                <table className="w-full">
+                  <thead className="sticky top-0 bg-white">
+                    <tr className="text-slate-400 border-b border-slate-100">
+                      <th className="px-3 py-1.5 text-left font-semibold">Mês/Ano</th>
+                      <th className="px-3 py-1.5 text-right font-semibold">Índice (%)</th>
+                      <th className="px-3 py-1.5 text-right font-semibold">Fator Mensal</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {dados.map((d) => (
+                      <tr key={`${d.year}-${d.month}`} className="hover:bg-slate-50">
+                        <td className="px-3 py-1.5 font-mono text-slate-700">
+                          {String(d.month).padStart(2,'0')}/{d.year}
+                        </td>
+                        <td className="px-3 py-1.5 text-right tabular-nums text-slate-700">
+                          {d.value.toFixed(4).replace('.', ',')}%
+                        </td>
+                        <td className="px-3 py-1.5 text-right tabular-nums text-slate-400">
+                          {(1 + d.value / 100).toFixed(6).replace('.', ',')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
