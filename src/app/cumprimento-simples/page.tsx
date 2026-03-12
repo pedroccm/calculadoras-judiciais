@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import {
   CalculatorShell, SectionCard, Field, Input, CurrencyInput, BtnCalc,
-  ResultBox, AlertError, LoadingIndices,
+  ResultBox, AlertError, LoadingIndices, TabelaIndices,
 } from '@/components/calculator-shell'
 import { calcCumprimentoSimples } from '@/lib/calculations'
 import { formatCurrency, formatPercent, formatFactor, currentMonthInput, parseBrNumber } from '@/lib/format'
@@ -21,7 +21,6 @@ export default function CumprimentoSimplesPage() {
   const [taxaJuros, setTaxaJuros] = useState('1')
 
   const [resultado, setResultado] = useState<CumprimentoSimplesResult | null>(null)
-  const [mostrarDetalhes, setMostrarDetalhes] = useState(false)
 
   useEffect(() => {
     fetch('/api/indices')
@@ -166,55 +165,7 @@ export default function CumprimentoSimplesPage() {
                 </table>
               </SectionCard>
 
-              {/* Detalhamento mensal */}
-              <SectionCard>
-                <button
-                  onClick={() => setMostrarDetalhes(!mostrarDetalhes)}
-                  className="w-full flex items-center justify-between text-sm font-semibold text-navy-700 hover:text-navy-900 transition-colors cursor-pointer"
-                >
-                  <span>Detalhamento IPCA-E por mês ({resultado.detalhesCorrecao.length} meses)</span>
-                  <svg
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    className={`w-4 h-4 transition-transform ${mostrarDetalhes ? 'rotate-180' : ''}`}
-                  >
-                    <path d="M4 6l4 4 4-4" strokeLinecap="round"/>
-                  </svg>
-                </button>
-
-                {mostrarDetalhes && (
-                  <div className="mt-4 overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className="bg-navy-50 text-navy-600">
-                          <th className="py-2 px-2 text-left font-semibold">Mês/Ano</th>
-                          <th className="py-2 px-2 text-right font-semibold">IPCA-E %</th>
-                          <th className="py-2 px-2 text-right font-semibold">Fator Mensal</th>
-                          <th className="py-2 px-2 text-right font-semibold">Fator Acum.</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-navy-50">
-                        {resultado.detalhesCorrecao.map((d) => (
-                          <tr key={d.mesAno} className="hover:bg-navy-50/50">
-                            <td className="py-1.5 px-2 font-medium text-navy-700">{d.mesAno}</td>
-                            <td className="py-1.5 px-2 text-right tabular-nums text-navy-600">
-                              {d.ipcae.toFixed(4).replace('.', ',')}%
-                            </td>
-                            <td className="py-1.5 px-2 text-right tabular-nums text-navy-600">
-                              {d.fatorMensal.toFixed(6).replace('.', ',')}
-                            </td>
-                            <td className="py-1.5 px-2 text-right tabular-nums font-semibold text-navy-900">
-                              {d.fatorAcumulado.toFixed(6).replace('.', ',')}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </SectionCard>
+              <TabelaIndices detalhes={resultado.detalhesCorrecao} />
             </div>
           )}
 

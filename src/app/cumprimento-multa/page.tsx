@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import {
   CalculatorShell, SectionCard, Field, Input, CurrencyInput, BtnCalc,
-  ResultBox, AlertError, LoadingIndices,
+  ResultBox, AlertError, LoadingIndices, TabelaIndices,
 } from '@/components/calculator-shell'
 import { calcCumprimentoMulta } from '@/lib/calculations'
 import { formatCurrency, formatFactor, currentMonthInput, parseBrNumber } from '@/lib/format'
@@ -196,6 +196,8 @@ export default function CumprimentoMultaPage() {
                   sobre o valor original)
                 </div>
               </SectionCard>
+
+              <TabelaIndices detalhes={resultado.detalhesCorrecao} />
             </div>
           )}
 

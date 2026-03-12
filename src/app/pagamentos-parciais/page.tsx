@@ -201,6 +201,7 @@ export default function PagamentosParciaisPage() {
                     <thead>
                       <tr className="bg-navy-50 text-navy-600">
                         <th className="py-2 px-2 text-left font-semibold">Mês/Ano</th>
+                        <th className="py-2 px-2 text-right font-semibold">IPCA-E</th>
                         <th className="py-2 px-2 text-right font-semibold">Saldo Início</th>
                         <th className="py-2 px-2 text-right font-semibold">Juros</th>
                         <th className="py-2 px-2 text-right font-semibold">Pagamento</th>
@@ -214,6 +215,9 @@ export default function PagamentosParciaisPage() {
                           className={`hover:bg-navy-50/50 ${l.pagamento > 0 ? 'bg-slate-50/40' : ''}`}
                         >
                           <td className="py-1.5 px-2 font-medium text-navy-700">{l.mesAno}</td>
+                          <td className="py-1.5 px-2 text-right tabular-nums text-slate-400 font-mono">
+                            {((l.fatorCorrecao - 1) * 100).toFixed(4).replace('.', ',')}%
+                          </td>
                           <td className="py-1.5 px-2 text-right tabular-nums text-navy-600">
                             {formatCurrency(l.saldoInicio)}
                           </td>

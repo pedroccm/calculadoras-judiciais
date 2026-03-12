@@ -1,7 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 import type { ReactNode } from 'react'
+import type { DetalheCorrecao } from '@/lib/types'
 
 interface Props {
   titulo: string
@@ -255,6 +257,69 @@ export function LoadingIndices() {
         <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
       </svg>
       Carregando índices (BCB)...
+    </div>
+  )
+}
+
+export function TabelaIndices({ detalhes, label = 'IPCA-E' }: { detalhes: DetalheCorrecao[]; label?: string }) {
+  const [aberta, setAberta] = useState(false)
+  if (!detalhes || detalhes.length === 0) return null
+  return (
+    <div className="border border-slate-200 rounded-lg overflow-hidden text-xs">
+      <button
+        onClick={() => setAberta(v => !v)}
+        className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 transition-colors text-slate-600 font-medium"
+      >
+        <span className="flex items-center gap-2">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3.5 h-3.5 text-slate-400">
+            <path d="M2 4h12M4 8h8M6 12h4" strokeLinecap="round"/>
+          </svg>
+          Índices utilizados ({label}) — {detalhes.length} {detalhes.length === 1 ? 'mês' : 'meses'}
+        </span>
+        <svg
+          viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"
+          className={`w-3.5 h-3.5 text-slate-400 transition-transform ${aberta ? 'rotate-180' : ''}`}
+        >
+          <path d="M4 6l4 4 4-4" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+
+      {aberta && (
+        <table className="w-full">
+          <thead>
+            <tr className="bg-navy-50 text-navy-500 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left font-semibold">Mês/Ano</th>
+              <th className="px-3 py-2 text-right font-semibold">{label} (%)</th>
+              <th className="px-3 py-2 text-right font-semibold">Fator Mensal</th>
+              <th className="px-3 py-2 text-right font-semibold">Fator Acumulado</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {detalhes.map((d) => (
+              <tr key={d.mesAno} className="hover:bg-slate-50">
+                <td className="px-3 py-2 font-mono text-slate-700">{d.mesAno}</td>
+                <td className="px-3 py-2 text-right tabular-nums text-slate-700">
+                  {d.ipcae.toFixed(4).replace('.', ',')}%
+                </td>
+                <td className="px-3 py-2 text-right tabular-nums text-slate-500">
+                  {d.fatorMensal.toFixed(6).replace('.', ',')}
+                </td>
+                <td className="px-3 py-2 text-right tabular-nums font-medium text-navy-700">
+                  {d.fatorAcumulado.toFixed(6).replace('.', ',')}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="bg-navy-50 border-t border-navy-200">
+              <td colSpan={3} className="px-3 py-2 font-semibold text-navy-700">Fator total acumulado</td>
+              <td className="px-3 py-2 text-right tabular-nums font-bold text-navy-900">
+                {detalhes[detalhes.length - 1].fatorAcumulado.toFixed(6).replace('.', ',')}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      )}
     </div>
   )
 }
