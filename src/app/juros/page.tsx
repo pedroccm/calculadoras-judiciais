@@ -52,12 +52,19 @@ export default function JurosPage() {
     .sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month)
     .slice(-18)
 
-  // Taxa do mês atual
-  const selicAtual = (indices?.selic ?? []).find(s => s.year === current.year && s.month === current.month)
-  const ipcaeAtual = (indices?.ipcae ?? []).find(s => s.year === current.year && s.month === current.month)
+  // Taxa do mês mais recente disponível (BCB pode atrasar publicação)
+  const selicOrdenada = (indices?.selic ?? []).slice().sort(
+    (a, b) => a.year !== b.year ? b.year - a.year : b.month - a.month
+  )
+  const selicAtual = selicOrdenada[0] ?? null
+  const ipcaeAtual = selicAtual
+    ? (indices?.ipcae ?? []).find(s => s.year === selicAtual.year && s.month === selicAtual.month) ?? null
+    : null
   const taxaRealAtual = selicAtual != null && ipcaeAtual != null
     ? Math.max(0, selicAtual.value - ipcaeAtual.value)
     : null
+  // Indica se é o mês corrente ou um mês anterior (dado ainda não publicado)
+  const isMesAtual = selicAtual?.year === current.year && selicAtual?.month === current.month
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-8">
@@ -122,6 +129,11 @@ export default function JurosPage() {
                       <span className="text-xs text-navy-400">
                         SELIC {formatPercent(selicAtual!.value)} − IPCA-E {formatPercent(ipcaeAtual!.value)}
                       </span>
+                      {!isMesAtual && selicAtual && (
+                        <span className="text-xs text-amber-600">
+                          ref. {mesLabel(selicAtual.year, selicAtual.month)} (último disponível)
+                        </span>
+                      )}
                     </div>
                   ) : (
                     <span className={`text-xs px-2 py-0.5 rounded font-semibold ${PERIODOS[2].cor}`}>
