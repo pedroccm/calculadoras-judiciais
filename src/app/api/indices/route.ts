@@ -53,7 +53,7 @@ export async function GET() {
     fetchSerie(10764, DATA_HISTORICA), // IPCA-E mensal
     fetchSerie(188,   DATA_HISTORICA), // INPC mensal
     fetchSerie(1619,  DATA_HISTORICA), // Salário mínimo
-    fetchSerie(11,    DATA_SELIC),     // Taxa Over/Selic % a.m. (só precisa de set/2024+)
+    fetchSerie(4390,  DATA_SELIC),     // Selic acumulada no mês % a.m. (só precisa de set/2024+)
   ])
 
   // Retorna o que conseguiu — séries com falha ficam como array vazio
