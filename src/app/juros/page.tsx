@@ -87,12 +87,13 @@ export default function JurosPage() {
               <tr className="bg-navy-800 text-white">
                 <th className="py-3 px-4 text-left font-semibold">Período</th>
                 <th className="py-3 px-4 text-center font-semibold">Taxa Mensal</th>
-                <th className="py-3 px-4 text-center font-semibold">Taxa Anual</th>
+                <th className="py-3 px-4 text-center font-semibold">Equivalente Anual</th>
                 <th className="py-3 px-4 text-left font-semibold hidden sm:table-cell">Base Legal</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-navy-100">
-              {PERIODOS.map((p) => (
+              {/* Períodos fixos */}
+              {PERIODOS.slice(0, 2).map((p) => (
                 <tr key={p.periodo} className="hover:bg-navy-50/50">
                   <td className="py-3 px-4 font-medium text-navy-800">{p.periodo}</td>
                   <td className="py-3 px-4 text-center">
@@ -104,45 +105,46 @@ export default function JurosPage() {
                   <td className="py-3 px-4 text-xs text-navy-500 hidden sm:table-cell">{p.base}</td>
                 </tr>
               ))}
+
+              {/* Período SELIC real — com valores ao vivo */}
+              <tr className="bg-amber-50/60 hover:bg-amber-50">
+                <td className="py-3 px-4 font-medium text-navy-800">
+                  {PERIODOS[2].periodo}
+                </td>
+                <td className="py-3 px-4 text-center">
+                  {loading ? (
+                    <span className="text-xs text-navy-400">carregando…</span>
+                  ) : taxaRealAtual != null ? (
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-xs px-2 py-0.5 rounded font-semibold bg-amber-100 text-amber-700">
+                        {formatPercent(taxaRealAtual)} a.m.
+                      </span>
+                      <span className="text-xs text-navy-400">
+                        SELIC {formatPercent(selicAtual!.value)} − IPCA-E {formatPercent(ipcaeAtual!.value)}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className={`text-xs px-2 py-0.5 rounded font-semibold ${PERIODOS[2].cor}`}>
+                      {PERIODOS[2].taxa}
+                    </span>
+                  )}
+                </td>
+                <td className="py-3 px-4 text-center text-navy-500 font-mono text-xs">
+                  {loading ? '—' : taxaRealAtual != null
+                    ? `≈ ${formatPercent(taxaRealAtual * 12)} a.a.*`
+                    : 'variável'}
+                </td>
+                <td className="py-3 px-4 text-xs text-navy-500 hidden sm:table-cell">
+                  {PERIODOS[2].base}
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
         <p className="text-xs text-navy-400 mt-2">
-          A taxa real (SELIC − IPCA-E) nunca é negativa — quando a diferença for menor que zero, aplica-se 0%.
+          * Equivalente anual aproximado (taxa mensal × 12). A taxa real (SELIC − IPCA-E) nunca é negativa — quando a diferença for menor que zero, aplica-se 0%.
         </p>
       </section>
-
-      {/* Taxa do mês atual */}
-      {!loading && selicAtual != null && (
-        <section>
-          <h2 className="text-sm font-semibold text-navy-700 uppercase tracking-wider mb-3">
-            Taxa do Mês Atual — {mesLabel(current.year, current.month)}
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="rounded-xl border border-navy-200 bg-white p-4">
-              <p className="text-xs text-navy-500 mb-1">SELIC</p>
-              <p className="text-2xl font-bold text-navy-900 tabular-nums">
-                {formatPercent(selicAtual.value)}
-              </p>
-              <p className="text-xs text-navy-400 mt-0.5">série 11 BCB</p>
-            </div>
-            <div className="rounded-xl border border-navy-200 bg-white p-4">
-              <p className="text-xs text-navy-500 mb-1">IPCA-E</p>
-              <p className="text-2xl font-bold text-navy-900 tabular-nums">
-                {ipcaeAtual != null ? formatPercent(ipcaeAtual.value) : '—'}
-              </p>
-              <p className="text-xs text-navy-400 mt-0.5">série 10764 BCB</p>
-            </div>
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-              <p className="text-xs text-amber-700 mb-1 font-medium">Juros Reais (SELIC − IPCA-E)</p>
-              <p className="text-2xl font-bold text-amber-800 tabular-nums">
-                {taxaRealAtual != null ? formatPercent(taxaRealAtual) : '—'}
-              </p>
-              <p className="text-xs text-amber-600 mt-0.5">aplicada neste mês</p>
-            </div>
-          </div>
-        </section>
-      )}
 
       {loading && (
         <div className="text-center py-10 text-navy-400 text-sm">
