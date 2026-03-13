@@ -52,11 +52,13 @@ export default function JurosPage() {
     .sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month)
     .slice(-18)
 
-  // Taxa do mês mais recente disponível (BCB pode atrasar publicação)
-  const selicOrdenada = (indices?.selic ?? []).slice().sort(
-    (a, b) => a.year !== b.year ? b.year - a.year : b.month - a.month
-  )
-  const selicAtual = selicOrdenada[0] ?? null
+  // Mês mais recente onde AMBOS SELIC e IPCA-E estão disponíveis
+  // (IPCA-E/IBGE costuma atrasar 1-2 meses em relação à SELIC/BCB)
+  const ipcaeSet = new Set((indices?.ipcae ?? []).map(i => `${i.year}-${i.month}`))
+  const selicComPar = (indices?.selic ?? [])
+    .filter(s => ipcaeSet.has(`${s.year}-${s.month}`))
+    .sort((a, b) => a.year !== b.year ? b.year - a.year : b.month - a.month)
+  const selicAtual = selicComPar[0] ?? null
   const ipcaeAtual = selicAtual
     ? (indices?.ipcae ?? []).find(s => s.year === selicAtual.year && s.month === selicAtual.month) ?? null
     : null
