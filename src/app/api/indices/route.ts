@@ -74,8 +74,9 @@ export async function GET() {
     { ipcae, inpc, salarioMinimo: salario, selic },
     {
       headers: {
-        // CDN Netlify cacheia por 1h; serve stale por mais 23h enquanto revalida
-        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=82800',
+        // CDN cacheia por 5min; serve stale até 1h enquanto revalida em background
+        // (5min garante cache-bust rápido após deploys)
+        'Cache-Control': 'public, max-age=300, stale-while-revalidate=3300',
       },
     }
   )
