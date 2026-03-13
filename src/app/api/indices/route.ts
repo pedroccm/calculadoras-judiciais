@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import type { MonthlyIndex, SalarioMinimo } from '@/lib/types'
 
+// Só busca a partir de 2003 — suficiente para todos os cálculos
 const BCB_BASE = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs'
-const DATA_INICIAL = '01/01/2015'
+const DATA_INICIAL = '01/01/2003'
+const TIMEOUT_MS = 8000
 
 interface BcbItem {
   data: string  // "DD/MM/YYYY"
@@ -11,12 +13,19 @@ interface BcbItem {
 
 async function fetchSerie(serie: number): Promise<BcbItem[]> {
   const url = `${BCB_BASE}.${serie}/dados?formato=json&dataInicial=${DATA_INICIAL}`
-  const res = await fetch(url, {
-    next: { revalidate: 86400 }, // cache 24h
-    headers: { 'Accept': 'application/json' },
-  })
-  if (!res.ok) throw new Error(`BCB série ${serie} status ${res.status}`)
-  return res.json()
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      next: { revalidate: 3600 }, // cache Next.js 1h
+      headers: { 'Accept': 'application/json' },
+    })
+    if (!res.ok) throw new Error(`BCB série ${serie} status ${res.status}`)
+    return res.json()
+  } finally {
+    clearTimeout(timer)
+  }
 }
 
 function parseMonthly(items: BcbItem[]): MonthlyIndex[] {
@@ -40,25 +49,34 @@ function parseSalario(items: BcbItem[]): SalarioMinimo[] {
 }
 
 export async function GET() {
-  try {
-    const [rawIpcae, rawInpc, rawSalario, rawSelic] = await Promise.all([
-      fetchSerie(10764), // IPCA-E mensal
-      fetchSerie(188),   // INPC mensal
-      fetchSerie(1619),  // Salário mínimo
-      fetchSerie(11),    // Taxa Over/Selic % a.m.
-    ])
+  const [resIpcae, resInpc, resSalario, resSelic] = await Promise.allSettled([
+    fetchSerie(10764), // IPCA-E mensal
+    fetchSerie(188),   // INPC mensal
+    fetchSerie(1619),  // Salário mínimo
+    fetchSerie(11),    // Taxa Over/Selic % a.m.
+  ])
 
-    return NextResponse.json({
-      ipcae: parseMonthly(rawIpcae),
-      inpc: parseMonthly(rawInpc),
-      salarioMinimo: parseSalario(rawSalario),
-      selic: parseMonthly(rawSelic),
-    })
-  } catch (err) {
-    console.error('Erro ao buscar índices BCB:', err)
-    return NextResponse.json(
-      { error: 'Não foi possível carregar os índices econômicos.' },
-      { status: 503 }
-    )
+  // Retorna o que conseguiu — séries com falha ficam como array vazio
+  const ipcae   = resIpcae.status   === 'fulfilled' ? parseMonthly(resIpcae.value)   : []
+  const inpc    = resInpc.status    === 'fulfilled' ? parseMonthly(resInpc.value)    : []
+  const salario = resSalario.status === 'fulfilled' ? parseSalario(resSalario.value) : []
+  const selic   = resSelic.status   === 'fulfilled' ? parseMonthly(resSelic.value)   : []
+
+  const hasError = [resIpcae, resInpc, resSalario, resSelic].some(r => r.status === 'rejected')
+  if (hasError) {
+    const erros = [resIpcae, resInpc, resSalario, resSelic]
+      .map((r, i) => r.status === 'rejected' ? `série ${[10764,188,1619,11][i]}` : null)
+      .filter(Boolean)
+    console.error('Erro ao buscar índices BCB:', erros.join(', '))
   }
+
+  return NextResponse.json(
+    { ipcae, inpc, salarioMinimo: salario, selic },
+    {
+      headers: {
+        // CDN Netlify cacheia por 1h; serve stale por mais 23h enquanto revalida
+        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=82800',
+      },
+    }
+  )
 }
