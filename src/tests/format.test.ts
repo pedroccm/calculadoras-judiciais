@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { formatCurrency, parseBrNumber, monthsBetween, compareYearMonth, addMonths } from '@/lib/format'
+import { formatCurrency, parseBrNumber, compareYearMonth, addMonths } from '@/lib/format'
+import { monthsBetween } from '@/lib/calculations'
 
 describe('formatCurrency', () => {
   it('formata zero', () => {

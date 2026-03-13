@@ -7,7 +7,13 @@ import {
 } from '@/components/calculator-shell'
 import { calcCumprimentoSimples } from '@/lib/calculations'
 import { formatCurrency, formatPercent, formatFactor, currentMonthInput, parseBrNumber } from '@/lib/format'
-import type { Indices, CumprimentoSimplesResult } from '@/lib/types'
+import type { Indices, CumprimentoSimplesResult, TipoJurosPeriodo } from '@/lib/types'
+
+const LABEL_PERIODO: Record<TipoJurosPeriodo, string> = {
+  '6% a.a.': '6% a.a. (até set/2003)',
+  '12% a.a.': '12% a.a. (out/2003–ago/2024)',
+  'SELIC real': 'SELIC real (set/2024+)',
+}
 
 export default function CumprimentoSimplesPage() {
   const [indices, setIndices] = useState<Indices | null>(null)
@@ -18,7 +24,6 @@ export default function CumprimentoSimplesPage() {
   const [valor, setValor] = useState('')
   const [dataCondena, setDataCondena] = useState('')
   const [dataAtual, setDataAtual] = useState(currentMonthInput)
-  const [taxaJuros, setTaxaJuros] = useState('1')
 
   const [resultado, setResultado] = useState<CumprimentoSimplesResult | null>(null)
 
@@ -44,7 +49,7 @@ export default function CumprimentoSimplesPage() {
       { year: fy, month: fm },
       { year: ty, month: tm },
       indices.ipcae,
-      parseFloat(taxaJuros) || 1
+      indices.selic
     )
     setResultado(r)
   }
@@ -78,29 +83,15 @@ export default function CumprimentoSimplesPage() {
               <MonthYearPicker value={dataAtual} onChange={setDataAtual} />
             </Field>
 
-            <Field
-              label="Taxa de Juros de Mora"
-              hint="Padrão: 1% a.m. (art. 406 CC / Tabela TJSP)"
-            >
-              <Input
-                type="number"
-                value={taxaJuros}
-                onChange={setTaxaJuros}
-                placeholder="1"
-                suffix="% a.m."
-                step="0.1"
-                min="0"
-              />
-            </Field>
-
             <div className="pt-1">
               <BtnCalc onClick={calcular} loading={loadingIdx} />
             </div>
 
             <div className="bg-navy-50 rounded-lg p-3 text-xs text-navy-500 leading-relaxed">
               <strong className="text-navy-700">Metodologia:</strong> Correção monetária pelo IPCA-E
-              acumulado (Tabela Prática do TJSP) + juros de mora simples sobre o valor corrigido.
-              Fórmula: <em>VOriginal × Fator IPCA-E × (1 + taxa × meses)</em>
+              (Tabela Prática TJSP) + juros de mora conforme 3 períodos legais:{' '}
+              <em>6% a.a. até set/2003 · 12% a.a. até ago/2024 · SELIC real a partir de set/2024</em>
+              {' '}(STJ Tema 1.243 / STF Tema 1.285).
             </div>
           </div>
         </SectionCard>
@@ -121,7 +112,7 @@ export default function CumprimentoSimplesPage() {
                     value={formatCurrency(resultado.principalCorrigido - resultado.principalOriginal)}
                   />
                   <ResultBox
-                    label={`Juros de Mora (${resultado.meses} meses)`}
+                    label={`Juros de Mora (${formatPercent(resultado.taxaJurosTotal)})`}
                     value={formatCurrency(resultado.jurosMora)}
                   />
                 </div>
@@ -140,7 +131,7 @@ export default function CumprimentoSimplesPage() {
                       ['Valor da condenação', formatCurrency(resultado.principalOriginal)],
                       ['Fator de correção IPCA-E', formatFactor(resultado.fatorCorrecao)],
                       ['Principal corrigido', formatCurrency(resultado.principalCorrigido)],
-                      [`Juros ${parseFloat(taxaJuros)}% × ${resultado.meses} meses`, formatCurrency(resultado.jurosMora)],
+                      [`Juros de mora (${formatPercent(resultado.taxaJurosTotal)} acum.)`, formatCurrency(resultado.jurosMora)],
                     ].map(([k, v]) => (
                       <tr key={k} className="hover:bg-navy-50/50">
                         <td className="py-2 text-navy-600">{k}</td>
@@ -158,6 +149,55 @@ export default function CumprimentoSimplesPage() {
               </SectionCard>
 
               <TabelaIndices detalhes={resultado.detalhesCorrecao} />
+
+              {resultado.detalhesJuros.length > 0 && (
+                <SectionCard titulo="Detalhamento dos Juros de Mora">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="bg-navy-100 text-navy-700">
+                          <th className="py-2 px-2 text-left font-semibold">Mês/Ano</th>
+                          <th className="py-2 px-2 text-center font-semibold">Período</th>
+                          <th className="py-2 px-2 text-right font-semibold">Taxa Mês</th>
+                          <th className="py-2 px-2 text-right font-semibold">SELIC</th>
+                          <th className="py-2 px-2 text-right font-semibold">IPCA-E</th>
+                          <th className="py-2 px-2 text-right font-semibold">Acumulada</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-navy-100">
+                        {resultado.detalhesJuros.map((d) => (
+                          <tr key={d.mesAno} className="hover:bg-navy-50/50">
+                            <td className="py-1.5 px-2 font-mono text-navy-800">{d.mesAno}</td>
+                            <td className="py-1.5 px-2 text-center">
+                              <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                                d.tipo === 'SELIC real'
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : d.tipo === '12% a.a.'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : 'bg-slate-100 text-slate-700'
+                              }`}>
+                                {LABEL_PERIODO[d.tipo]}
+                              </span>
+                            </td>
+                            <td className="py-1.5 px-2 text-right tabular-nums text-navy-700">
+                              {formatPercent(d.taxaMensal)}
+                            </td>
+                            <td className="py-1.5 px-2 text-right tabular-nums text-navy-500">
+                              {d.selicMensal != null ? formatPercent(d.selicMensal) : '—'}
+                            </td>
+                            <td className="py-1.5 px-2 text-right tabular-nums text-navy-500">
+                              {d.ipcaeMensal != null ? formatPercent(d.ipcaeMensal) : '—'}
+                            </td>
+                            <td className="py-1.5 px-2 text-right tabular-nums font-semibold text-navy-800">
+                              {formatPercent(d.taxaAcumulada)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </SectionCard>
+              )}
             </div>
           )}
 

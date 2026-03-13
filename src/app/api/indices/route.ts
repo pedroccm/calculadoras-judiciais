@@ -41,16 +41,18 @@ function parseSalario(items: BcbItem[]): SalarioMinimo[] {
 
 export async function GET() {
   try {
-    const [rawIpcae, rawInpc, rawSalario] = await Promise.all([
+    const [rawIpcae, rawInpc, rawSalario, rawSelic] = await Promise.all([
       fetchSerie(10764), // IPCA-E mensal
       fetchSerie(188),   // INPC mensal
       fetchSerie(1619),  // Salário mínimo
+      fetchSerie(11),    // Taxa Over/Selic % a.m.
     ])
 
     return NextResponse.json({
       ipcae: parseMonthly(rawIpcae),
       inpc: parseMonthly(rawInpc),
       salarioMinimo: parseSalario(rawSalario),
+      selic: parseMonthly(rawSelic),
     })
   } catch (err) {
     console.error('Erro ao buscar índices BCB:', err)

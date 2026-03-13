@@ -9,7 +9,7 @@ import {
   calcSuperendividamento,
   calcDividaContrato,
 } from '@/lib/calculations'
-import { ipcaeMock, inpcMock, salarioMinimoMock } from './fixtures'
+import { ipcaeMock, inpcMock, selicMock, salarioMinimoMock } from './fixtures'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -71,23 +71,21 @@ describe('calcCorrectionFactor (IPCA-E mock 1%/mês)', () => {
 // ─── calcCumprimentoSimples ───────────────────────────────────────────────────
 
 describe('calcCumprimentoSimples', () => {
-  it('principal R$10.000, 3 meses, IPCA-E 1%/mês, juros 1%/mês', () => {
+  it('principal R$10.000, 3 meses em jan–mar/2024 (período 12% a.a.)', () => {
     const r = calcCumprimentoSimples(
       10_000,
       { year: 2024, month: 1 },
       { year: 2024, month: 4 },
       ipcaeMock,
-      1
+      selicMock
     )
 
     // Correção: 10000 × 1.01³ = 10303.01
     expect(round(r.principalCorrigido)).toBe(round(10_000 * 1.01 ** 3))
 
-    // Juros: 10303.01 × 1% × 3 = 309.09
-    expect(round(r.jurosMora)).toBe(round(r.principalCorrigido * 0.01 * 3))
-
-    // Total = corrigido + juros
-    expect(round(r.totalAtualizado)).toBe(round(r.principalCorrigido + r.jurosMora))
+    // Juros: período jan–mar/2024 = 3 meses a 1%/mês = 3% total
+    expect(round(r.taxaJurosTotal, 4)).toBe(3)
+    expect(round(r.jurosMora)).toBe(round(r.principalCorrigido * 0.03))
 
     expect(r.meses).toBe(3)
     expect(r.principalOriginal).toBe(10_000)
@@ -98,23 +96,24 @@ describe('calcCumprimentoSimples', () => {
       5_000,
       { year: 2024, month: 6 },
       { year: 2024, month: 6 },
-      ipcaeMock
+      ipcaeMock,
+      selicMock
     )
     expect(r.totalAtualizado).toBe(5_000)
     expect(r.fatorCorrecao).toBe(1)
   })
 
-  it('mês sem índice disponível → assume 0% (sem correção naquele mês)', () => {
-    // 2030 não existe no mock → índice 0
+  it('período SELIC real (set/2024): taxa = SELIC(1.5%) − IPCA-E(1%) = 0.5%/mês', () => {
     const r = calcCumprimentoSimples(
-      1_000,
-      { year: 2030, month: 1 },
-      { year: 2030, month: 2 },
+      10_000,
+      { year: 2024, month: 9 },  // set/2024
+      { year: 2024, month: 12 }, // 3 meses no período SELIC real
       ipcaeMock,
-      0
+      selicMock
     )
-    expect(r.principalCorrigido).toBe(1_000)
-    expect(r.jurosMora).toBe(0)
+    // 3 meses × 0.5%/mês = 1.5% total
+    expect(round(r.taxaJurosTotal, 4)).toBe(1.5)
+    expect(r.detalhesJuros[0].tipo).toBe('SELIC real')
   })
 })
 
@@ -127,9 +126,9 @@ describe('calcCumprimentoMulta', () => {
       { year: 2024, month: 1 },
       { year: 2024, month: 4 },
       ipcaeMock,
-      1, // juros 1%/mês
-      10, // multa 10%
-      10  // honorários 10%
+      selicMock,
+      10,
+      10
     )
 
     expect(round(r.multa10)).toBe(round(r.totalAtualizado * 0.1))
@@ -143,7 +142,7 @@ describe('calcCumprimentoMulta', () => {
       { year: 2024, month: 1 },
       { year: 2024, month: 2 },
       ipcaeMock,
-      0, // sem juros para simplificar
+      selicMock,
       2,
       5
     )
@@ -153,7 +152,7 @@ describe('calcCumprimentoMulta', () => {
   })
 
   it('totalComMulta deve ser sempre >= totalAtualizado', () => {
-    const r = calcCumprimentoMulta(50_000, { year: 2024, month: 1 }, { year: 2025, month: 1 }, ipcaeMock)
+    const r = calcCumprimentoMulta(50_000, { year: 2024, month: 1 }, { year: 2025, month: 1 }, ipcaeMock, selicMock)
     expect(r.totalComMulta).toBeGreaterThan(r.totalAtualizado)
   })
 })

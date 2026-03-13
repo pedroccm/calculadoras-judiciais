@@ -5,6 +5,8 @@ import type {
   CumprimentoSimplesResult,
   CumprimentoMultaResult,
   DetalheCorrecao,
+  DetalheJuros,
+  TipoJurosPeriodo,
   TipoPensao,
   PensaoResult,
   PensaoMes,
@@ -51,6 +53,58 @@ function findSalario(salarios: SalarioMinimo[], ym: YearMonth): number {
   return best?.value ?? 1412 // fallback 2025
 }
 
+// ─── Juros Moratórios Civis (3 períodos legais) ─────────────────────────────
+// Período 1: até set/2003 → 6% a.a. = 0,5% a.m. (CC/1916 e início CC/2002)
+// Período 2: out/2003 a ago/2024 → 12% a.a. = 1% a.m. (art. 406 CC c/c Tabela TJSP)
+// Período 3: set/2024 em diante → SELIC real mensal = SELIC% − IPCA-E% (mín. 0)
+//   Base legal: STJ Tema 1.243 / STF Tema 1.285 (julgado em 26/08/2024)
+
+const MUDANCA_1: YearMonth = { year: 2003, month: 10 } // out/2003: 6% → 12%
+const MUDANCA_2: YearMonth = { year: 2024, month: 9 }  // set/2024: 12% → SELIC real
+
+export function calcJurosMoratoriosCivil(
+  from: YearMonth,
+  to: YearMonth,
+  ipcae: MonthlyIndex[],
+  selic: MonthlyIndex[]
+): { taxaTotal: number; detalhes: DetalheJuros[] } {
+  const months = iterateMonths(from, to)
+  let taxaTotal = 0
+  const detalhes: DetalheJuros[] = []
+
+  for (const m of months) {
+    let taxaMensal: number
+    let tipo: TipoJurosPeriodo
+    let selicMensal: number | undefined
+    let ipcaeMensal: number | undefined
+
+    if (compareYearMonth(m, MUDANCA_1) < 0) {
+      taxaMensal = 0.5
+      tipo = '6% a.a.'
+    } else if (compareYearMonth(m, MUDANCA_2) < 0) {
+      taxaMensal = 1.0
+      tipo = '12% a.a.'
+    } else {
+      selicMensal = findIndex(selic, m) ?? 0
+      ipcaeMensal = findIndex(ipcae, m) ?? 0
+      taxaMensal = Math.max(0, selicMensal - ipcaeMensal)
+      tipo = 'SELIC real'
+    }
+
+    taxaTotal += taxaMensal
+    detalhes.push({
+      mesAno: formatYearMonth(m),
+      taxaMensal,
+      taxaAcumulada: taxaTotal,
+      tipo,
+      selicMensal,
+      ipcaeMensal,
+    })
+  }
+
+  return { taxaTotal, detalhes }
+}
+
 // ─── Correção Monetária por IPCA-E ──────────────────────────────────────────
 
 export function calcCorrectionFactor(
@@ -87,13 +141,14 @@ export function calcCumprimentoSimples(
   from: YearMonth,
   to: YearMonth,
   ipcae: MonthlyIndex[],
-  taxaJurosMensal: number = 1 // 1% a.m.
+  selic: MonthlyIndex[]
 ): CumprimentoSimplesResult {
   const { factor, detalhes } = calcCorrectionFactor(ipcae, from, to)
   const meses = monthsBetween(from, to)
 
   const principalCorrigido = principal * factor
-  const jurosMora = principalCorrigido * (taxaJurosMensal / 100) * meses
+  const { taxaTotal, detalhes: detalhesJuros } = calcJurosMoratoriosCivil(from, to, ipcae, selic)
+  const jurosMora = principalCorrigido * (taxaTotal / 100)
   const totalAtualizado = principalCorrigido + jurosMora
 
   return {
@@ -101,9 +156,11 @@ export function calcCumprimentoSimples(
     fatorCorrecao: factor,
     principalCorrigido,
     jurosMora,
+    taxaJurosTotal: taxaTotal,
     totalAtualizado,
     meses,
     detalhesCorrecao: detalhes,
+    detalhesJuros,
   }
 }
 
@@ -115,11 +172,11 @@ export function calcCumprimentoMulta(
   from: YearMonth,
   to: YearMonth,
   ipcae: MonthlyIndex[],
-  taxaJurosMensal: number = 1,
+  selic: MonthlyIndex[],
   percentualMulta: number = 10,
   percentualHonorarios: number = 10
 ): CumprimentoMultaResult {
-  const base = calcCumprimentoSimples(principal, from, to, ipcae, taxaJurosMensal)
+  const base = calcCumprimentoSimples(principal, from, to, ipcae, selic)
   const multa10 = base.totalAtualizado * (percentualMulta / 100)
   const honorarios10 = base.totalAtualizado * (percentualHonorarios / 100)
   const totalComMulta = base.totalAtualizado + multa10 + honorarios10

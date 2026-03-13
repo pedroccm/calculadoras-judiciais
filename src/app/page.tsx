@@ -5,7 +5,7 @@ const calculadoras = [
     href: '/cumprimento-simples',
     num: '01',
     titulo: 'Cumprimento de Sentença',
-    descricao: 'Atualiza condenação com IPCA-E e juros de mora de 1% a.m.',
+    descricao: 'IPCA-E + juros de mora em 3 períodos legais (6% a.a. → 12% a.a. → SELIC real).',
     base: 'Art. 509 CPC',
   },
   {
@@ -80,8 +80,28 @@ export default function HomePage() {
         ))}
       </div>
 
-      <p className="mt-8 text-xs text-navy-400 text-center">
-        Índices via Banco Central do Brasil · IPCA-E · INPC · Salário Mínimo
+      <div className="mt-6">
+        <Link
+          href="/juros"
+          className="w-full flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 transition-colors px-5 py-4 group"
+        >
+          <div>
+            <p className="text-sm font-semibold text-amber-900">Juros de Mora — Referência</p>
+            <p className="text-xs text-amber-700 mt-0.5">
+              Tabela dos 3 períodos legais · SELIC real mensal · histórico atualizado automaticamente
+            </p>
+          </div>
+          <svg
+            viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"
+            className="w-4 h-4 text-amber-600 group-hover:text-amber-800 flex-shrink-0 transition-colors"
+          >
+            <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </Link>
+      </div>
+
+      <p className="mt-4 text-xs text-navy-400 text-center">
+        Índices via Banco Central do Brasil · IPCA-E · INPC · SELIC · Salário Mínimo
       </p>
     </div>
   )

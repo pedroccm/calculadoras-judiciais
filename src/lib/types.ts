@@ -19,6 +19,7 @@ export interface Indices {
   ipcae: MonthlyIndex[]
   inpc: MonthlyIndex[]
   salarioMinimo: SalarioMinimo[]
+  selic: MonthlyIndex[]
 }
 
 // ─── Cumprimento Simples ────────────────────────────────
@@ -27,9 +28,11 @@ export interface CumprimentoSimplesResult {
   fatorCorrecao: number
   principalCorrigido: number
   jurosMora: number
+  taxaJurosTotal: number   // soma % de todas as taxas mensais aplicadas
   totalAtualizado: number
   meses: number
   detalhesCorrecao: DetalheCorrecao[]
+  detalhesJuros: DetalheJuros[]
 }
 
 export interface DetalheCorrecao {
@@ -37,6 +40,17 @@ export interface DetalheCorrecao {
   ipcae: number
   fatorMensal: number
   fatorAcumulado: number
+}
+
+export type TipoJurosPeriodo = '6% a.a.' | '12% a.a.' | 'SELIC real'
+
+export interface DetalheJuros {
+  mesAno: string
+  taxaMensal: number      // taxa aplicada neste mês (%)
+  taxaAcumulada: number   // soma acumulada até este mês (%)
+  tipo: TipoJurosPeriodo
+  selicMensal?: number    // valor SELIC do mês (só no período SELIC real)
+  ipcaeMensal?: number    // valor IPCA-E do mês (só no período SELIC real)
 }
 
 // ─── Cumprimento com Multa ──────────────────────────────

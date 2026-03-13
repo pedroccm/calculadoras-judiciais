@@ -18,7 +18,6 @@ export default function CumprimentoMultaPage() {
   const [dataCondena, setDataCondena] = useState('')
   const [dataPrazo, setDataPrazo] = useState('') // data em que escoou o prazo de 15 dias
   const [dataAtual, setDataAtual] = useState(currentMonthInput)
-  const [taxaJuros, setTaxaJuros] = useState('1')
   const [percMulta, setPercMulta] = useState('10')
   const [percHonorarios, setPercHonorarios] = useState('10')
 
@@ -46,7 +45,7 @@ export default function CumprimentoMultaPage() {
       { year: fy, month: fm },
       { year: ty, month: tm },
       indices.ipcae,
-      parseFloat(taxaJuros) || 1,
+      indices.selic,
       parseFloat(percMulta) || 10,
       parseFloat(percHonorarios) || 10
     )
@@ -99,10 +98,6 @@ export default function CumprimentoMultaPage() {
               </div>
             </div>
 
-            <Field label="Taxa de Juros de Mora" hint="1% a.m. (art. 406 CC)">
-              <Input type="number" value={taxaJuros} onChange={setTaxaJuros} suffix="% a.m." step="0.1" min="0" />
-            </Field>
-
             <BtnCalc onClick={calcular} loading={loadingIdx} />
 
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-600 leading-relaxed">
@@ -126,7 +121,7 @@ export default function CumprimentoMultaPage() {
                       value={`+ ${formatCurrency(resultado.principalCorrigido - resultado.principalOriginal)}`}
                     />
                     <ResultBox
-                      label={`Juros ${parseFloat(taxaJuros)}% × ${resultado.meses} m.`}
+                      label={`Juros de mora (${resultado.taxaJurosTotal.toFixed(4)}%)`}
                       value={`+ ${formatCurrency(resultado.jurosMora)}`}
                     />
                   </div>
@@ -171,7 +166,7 @@ export default function CumprimentoMultaPage() {
                       ['Valor da condenação', formatCurrency(resultado.principalOriginal), ''],
                       ['Fator correção IPCA-E', formatFactor(resultado.fatorCorrecao), ''],
                       ['Principal corrigido', formatCurrency(resultado.principalCorrigido), ''],
-                      [`Juros ${parseFloat(taxaJuros)}% × ${resultado.meses} m.`, formatCurrency(resultado.jurosMora), ''],
+                      [`Juros de mora (${resultado.taxaJurosTotal.toFixed(4)}% acum.)`, formatCurrency(resultado.jurosMora), ''],
                       ['Débito atualizado', formatCurrency(resultado.totalAtualizado), 'font-bold'],
                       [`Multa ${pctMulta}% (art. 523 §1º)`, formatCurrency(resultado.multa10), 'text-slate-600'],
                       [`Honorários ${pctHon}% (art. 523 §1º)`, formatCurrency(resultado.honorarios10), 'text-slate-600'],
