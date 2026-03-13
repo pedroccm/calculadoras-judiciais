@@ -47,14 +47,14 @@ export default function JurosPage() {
   const current = currentYearMonth()
 
   // Últimos 18 meses de SELIC a partir de set/2024
-  const selicRecente = indices?.selic
+  const selicRecente = (indices?.selic ?? [])
     .filter(s => s.year > 2024 || (s.year === 2024 && s.month >= 9))
     .sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month)
-    .slice(-18) ?? []
+    .slice(-18)
 
   // Taxa do mês atual
-  const selicAtual = indices?.selic.find(s => s.year === current.year && s.month === current.month)
-  const ipcaeAtual = indices?.ipcae.find(s => s.year === current.year && s.month === current.month)
+  const selicAtual = (indices?.selic ?? []).find(s => s.year === current.year && s.month === current.month)
+  const ipcaeAtual = (indices?.ipcae ?? []).find(s => s.year === current.year && s.month === current.month)
   const taxaRealAtual = selicAtual != null && ipcaeAtual != null
     ? Math.max(0, selicAtual.value - ipcaeAtual.value)
     : null
